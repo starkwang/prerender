@@ -1,0 +1,20 @@
+{
+  "name": "prerendering",
+  "version": "0.0.2",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "author": "starkwang",
+  "license": "ISC",
+  "bin": {
+    "prerendering": "cli.js"
+  },
+  "dependencies": {
+    "del": "^3.0.0",
+    "meow": "^4.0.0",
+    "parse5": "^4.0.0",
+    "puppeteer": "^1.0.0",
+    "recursive-copy": "^2.0.8",
+    "replace-string": "^1.1.0"
+  }
+}
