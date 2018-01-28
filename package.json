@@ -1,6 +1,6 @@
 {
   "name": "prerendering",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "",
   "main": "index.js",
   "scripts": {},
@@ -13,7 +13,7 @@
     "del": "^3.0.0",
     "meow": "^4.0.0",
     "parse5": "^4.0.0",
-    "puppeteer": "^1.0.0",
+    "phantom": "^4.0.12",
     "recursive-copy": "^2.0.8",
     "replace-string": "^1.1.0"
   }

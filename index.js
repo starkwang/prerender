@@ -1,10 +1,10 @@
-const puppeteer = require('puppeteer');
 const express = require('express');
 const fs = require('fs');
 const path = require('path')
 const copy = require('recursive-copy');
 const replaceString = require('replace-string');
 const del = require('del');
+const phantom = require('phantom');
 
 const dom = require('./dom')
 
@@ -44,47 +44,55 @@ async function generate(configPath = './prerender.config.js') {
     var port = server.address().port;
   });
 
-  const browser = await puppeteer.launch();
+  const instance = await phantom.create();
+  try {
+    for (let i = 0; i < config.targets.length; i++) {
+      const target = config.targets[i]
+      // 打开新页面
+      const page = await instance.createPage();
+      console.log('Fetching:', target)
+      await page.open('http://localhost:13131/' + target);
 
-  await Promise.all(config.targets.map(async (target) => {
-    // 打开新页面
-    const page = await browser.newPage();
-    await page.goto('http://localhost:13131/' + target, {
-      waitUntil: 'domcontentloaded'
-    });
+      // container
+      console.log('Query container node')
+      const containerNode = await page.evaluate(function (selector) {
+        return document.querySelector(selector).outerHTML
+      }, config.prerenderContent);
+      console.log('Query container node success')
 
-    // container
-    const container = await page.$(config.prerenderContent);
-    const containerNode = await page.evaluate(container => container.outerHTML, container)
+      // style
+      console.log('Query style nodes')
+      const styleNodes = await page.evaluate(function () {
+        const results = []
+        const nodes = document.querySelectorAll('style');
+        for (var i = 0; i < nodes.length; i++) {
+          results.push(nodes[i].outerHTML)
+        }
+        return results;
+      });
+      console.log('Query style nodes success')
 
-    // style
-    const styles = await page.$$('style');
-    const styleNodes = await Promise.all(styles.map(async style => {
-      return await page.evaluate(style => style.outerHTML, style)
-    }))
-    // console.log(styleNodes, '\n\n')
 
+      // 写入 html
+      var html = fs.readFileSync(config.rootPath + target, 'utf-8')
+      html = dom.injectRoot(html, containerNode, config.prerenderRootId);
 
-    // 写入 html
-    var html = fs.readFileSync(config.rootPath + target, 'utf-8')
-    html = dom.injectRoot(html, containerNode, config.prerenderRootId);
+      html = dom.injectStyles(html, styleNodes)
+      console.log('Writing to html file:', config.rootPath + target);
+      fs.writeFileSync(config.rootPath + target, html)
 
-    html = dom.injectStyles(html, styleNodes)
-    // console.log(html)
-    fs.writeFileSync(config.rootPath + target, html)
+      // 关闭页面
+    }
+  } catch (e) {
+    console.log(e)
+  }
+  await instance.exit();
 
-    // 关闭页面
-    await page.close();
-  }))
-
-  await Promise.all(config.targets)
-
-  await browser.close();
   del.sync(['.prerender/**']);
   process.exit();
 }
 
-function test(...args) {
+function log(...args) {
   console.log(...args)
 }
 
