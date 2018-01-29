@@ -50,6 +50,7 @@ async function generate(configPath = './prerender.config.js') {
       const target = config.targets[i]
       // 打开新页面
       const page = await instance.createPage();
+      await page.property('viewportSize', { width: 800, height: 600, ...config.viewport })
       console.log('Fetching:', target)
       await page.open('http://localhost:13131/' + target);
 

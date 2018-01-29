@@ -3,6 +3,9 @@ function injectRoot(html, rootNode, rootContainerId) {
     var doc = parse5.parse(html)
     var prerenderContent = parse5.parseFragment(rootNode)
     var rootContainer = getElementById(doc, rootContainerId)
+    if (!rootContainer) {
+        throw new Error('Invalid prerenderRootId:', rootContainerId);
+    }
     rootContainer.childNodes = rootContainer.childNodes.concat(prerenderContent.childNodes)
     return parse5.serialize(doc)
 }

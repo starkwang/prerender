@@ -12,5 +12,10 @@ module.exports = {
 
     // 把首屏 .container 的内容放到 #main 下
     prerenderContent: '.container',
-    prerenderRootId: 'main'
+    prerenderRootId: 'main',
+
+    viewport: {
+        width: 375,
+        height: 667
+    }
 }
