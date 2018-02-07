@@ -33,4 +33,4 @@ module.exports = {
 然后执行即可（不填 config 参数也行，会默认使用当前路径下的 `prerender.config.js`）
 ```
 ./node_modules/.bin/prerendering --config=prerender.config.js
-``
+```
