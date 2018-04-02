@@ -5,6 +5,8 @@ const copy = require("recursive-copy");
 const replaceString = require("replace-string");
 const del = require("del");
 const phantom = require("phantom");
+const got = require("got");
+const purify = require("purify-css");
 
 const dom = require("./dom");
 
@@ -53,6 +55,17 @@ async function generate(configPath = "./prerender.config.js") {
         height: 600,
         ...config.viewport
       });
+
+      // 页面引用的 css 文件
+      let cssFileContents = [];
+      page.on("onResourceRequested", async function(requestData) {
+        const cssReg = /http:\/\/.*\.css/;
+        if (cssReg.test(requestData.url)) {
+          const css = await got(requestData.url);
+          // console.log(requestData.url, css.body);
+          cssFileContents.push(css.body);
+        }
+      });
       console.log("Fetching:", target);
       await page.open("http://localhost:13131/" + target);
 
@@ -75,12 +88,19 @@ async function generate(configPath = "./prerender.config.js") {
       });
       console.log("Query style nodes success");
 
+      cssFileContents
+        .map(css => {
+          return purify(containerNode, css, { minify: true });
+        })
+        .forEach(css => {
+          styleNodes.push('<style type="text/css">' + css + "</style>");
+        });
+
       // 写入 html
       var html = fs.readFileSync(config.rootPath + target, "utf-8");
       html = dom.injectRoot(html, containerNode, config.prerenderRootId);
 
       html = dom.injectStyles(html, styleNodes);
-      console.log(styleNodes);
       console.log("Writing to html file:", config.rootPath + target);
       fs.writeFileSync(config.rootPath + target, html);
 
