@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-'use strict';
-const meow = require('meow');
-const generate = require('./index');
- 
-const cli = meow(`
+"use strict";
+const meow = require("meow");
+const generate = require("./index");
+
+const cli = meow(
+  `
     Usage
       $ foo <input>
  
@@ -12,14 +13,16 @@ const cli = meow(`
  
     Examples
       $ foo --config=your.config.jjs
-`, {
+`,
+  {
     flags: {
-        config: {
-            type: 'string',
-            alias: 'c'
-        }
+      config: {
+        type: "string",
+        alias: "c"
+      }
     }
-});
+  }
+);
 /*
 {
     input: ['unicorns'],
